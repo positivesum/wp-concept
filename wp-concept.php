@@ -11,7 +11,9 @@ class WP_Concept {
 
     function __construct() {
         // Register Post Type
-        $this->register_post_type();
+        add_action( 'init', array(&$this,'register_post_type'), 0 );
+        // Add additional icons
+        add_action( 'admin_head', array(&$this,'icons_css') );
     }
 
     function register_post_type() {
@@ -27,6 +29,7 @@ class WP_Concept {
             'has_archive'           => true,
             'hierarchical'          => false,
             'menu_position'         => null,
+            'menu_icon'             => WP_PLUGIN_URL.'/'.basename(dirname(__FILE__)).'/images/light-bulb.png',
             'supports'              => array(
                 'title', 'editor', 'author', 'revisions', 'comments'
             )
@@ -49,6 +52,22 @@ class WP_Concept {
             'parent_item_colon'     => '',
             'menu_name'             => __('Concepts')
         );
+    }
+
+    function icons_css() {
+        ?>
+        <style type="text/css" media="screen">
+            #menu-posts-concept .wp-menu-image {
+                background: url(<?php echo WP_PLUGIN_URL.'/'.basename(dirname(__FILE__)) ?>/images/light-bulb.png) no-repeat 6px -17px !important;
+            }
+            #menu-posts-concept:hover .wp-menu-image, #menu-posts-concept.wp-has-current-submenu .wp-menu-image {
+                background-position:6px 7px!important;
+            }
+            .icon32-posts-concept {
+                background:url(<?php echo WP_PLUGIN_URL.'/'.basename(dirname(__FILE__)) ?>/images/light-bulb-32.png) no-repeat 0px 0px !important;
+            }
+        </style>
+        <?php
     }
 
 
