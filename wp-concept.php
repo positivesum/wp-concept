@@ -7,7 +7,7 @@ Author URI: https://www.odesk.com/users/~~41ba9055d0f90cee
 */
 
 class WP_Concept {
-    private $post_type = 'concept';
+    private $post_type = 'concepts';
     private $plugin_uri = '';
     private $plugin_name = '';
 
