@@ -108,6 +108,10 @@ class WP_Concept {
         );
     }
 
+    /**
+     * Html for Concept Files metabox
+     * @param $post
+     */
     function metabox_files($post) {
         // Use nonce for verification
         wp_nonce_field( plugin_basename( __FILE__ ), 'myplugin_noncename' );
@@ -120,6 +124,33 @@ class WP_Concept {
         <?php
     }
 
+    /**
+     * Get all revisions for post with ID $post_id
+     * @static
+     * @param $post_id
+     * @return mixed
+     */
+    static function get_revisions($post_id) {
+        global $wpdb;
+
+        return $wpdb->get_results(
+            "
+            SELECT * FROM $wpdb->posts WHERE post_name LIKE '$post_id-%' AND post_type='revision'
+            "
+        );
+
+
+    }
+}
+
+/**
+ * Get all revisions for post with ID $post_id
+ *
+ * @param $post_id
+ * @return mixed
+ */
+function get_revisions($post_id) {
+    return WP_Concept::get_revisions($post_id);
 }
 
 global $WP_Concept;
