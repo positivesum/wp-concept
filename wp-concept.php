@@ -8,17 +8,35 @@ Author URI: https://www.odesk.com/users/~~41ba9055d0f90cee
 
 class WP_Concept {
     private $post_type = 'concept';
+    private $plugin_uri = '';
+    private $plugin_name = '';
 
+    /**
+     * Constructor of class
+     */
     function __construct() {
+        // Setup plugin uri variable
+        $this->plugin_uri = WP_PLUGIN_URL.'/'.basename(dirname(__FILE__));
+
+        // Plugin name
+        $this->plugin_name = 'wp-concept';
+
         // Register Post Type
-        add_action( 'init', array(&$this,'register_post_type'), 0 );
-        // Add additional icons
-        add_action( 'admin_head', array(&$this,'icons_css') );
+        add_action( 'init', array(&$this,'post_type'), 0 );
+        // Define metaboxes for post type
+        add_action( 'add_meta_boxes', array(&$this,'post_type_metaboxes') );
+        // Additional admin styles
+        add_action('admin_print_styles', array(&$this,'admin_styles'));
+        // Additional admin scripts
+        add_action('admin_print_scripts', array(&$this,'admin_scripts'));
     }
 
-    function register_post_type() {
+    /**
+     * Register new post type - concept
+     */
+    function post_type() {
         register_post_type($this->post_type, array(
-            'labels'                => $this->get_post_type_labels(),
+            'labels'                => $this->post_type_labels(),
             'public'                => true,
             'publicly_queryable'    => true,
             'show_ui'               => true,
@@ -29,14 +47,18 @@ class WP_Concept {
             'has_archive'           => true,
             'hierarchical'          => false,
             'menu_position'         => null,
-            'menu_icon'             => WP_PLUGIN_URL.'/'.basename(dirname(__FILE__)).'/images/light-bulb.png',
+            'menu_icon'             => $this->plugin_uri.'/images/light-bulb.png',
             'supports'              => array(
                 'title', 'editor', 'author', 'revisions', 'comments'
             )
         ));
     }
 
-    private function get_post_type_labels() {
+    /**
+     * Get labels for post type "concept"
+     * @return array
+     */
+    private function post_type_labels() {
         return array(
             'name'                  => __('Concepts'),
             'singular_name'         => __('Concept'),
@@ -54,22 +76,49 @@ class WP_Concept {
         );
     }
 
-    function icons_css() {
-        ?>
-        <style type="text/css" media="screen">
-            #menu-posts-concept .wp-menu-image {
-                background: url(<?php echo WP_PLUGIN_URL.'/'.basename(dirname(__FILE__)) ?>/images/light-bulb.png) no-repeat 6px -17px !important;
-            }
-            #menu-posts-concept:hover .wp-menu-image, #menu-posts-concept.wp-has-current-submenu .wp-menu-image {
-                background-position:6px 7px!important;
-            }
-            .icon32-posts-concept {
-                background:url(<?php echo WP_PLUGIN_URL.'/'.basename(dirname(__FILE__)) ?>/images/light-bulb-32.png) no-repeat 0px 0px !important;
-            }
-        </style>
-        <?php
+    /**
+     * Additional styles for admin (wp-admin)
+     */
+    function admin_styles() {
+        wp_register_style($this->plugin_name.'-admin', $this->plugin_uri.'/css/admin.css');
+        wp_enqueue_style($this->plugin_name.'-admin');
     }
 
+    /**
+     * Additional scripts for admin (wp-admin)
+     */
+    function admin_scripts() {
+        wp_enqueue_script('media-upload');
+        wp_enqueue_script('thickbox');
+
+        wp_register_script($this->plugin_name.'-admin', $this->plugin_uri.'/js/admin.js', array('jquery','media-upload','thickbox'));
+        wp_enqueue_script($this->plugin_name.'-admin');
+    }
+
+    /**
+     * Adding new metaboxes
+     */
+    function post_type_metaboxes() {
+        // Concept Files
+        add_meta_box(
+            $this->plugin_name,
+            __('Concept Files'),
+            array(&$this, 'metabox_files'),
+            $this->post_type
+        );
+    }
+
+    function metabox_files($post) {
+        // Use nonce for verification
+        wp_nonce_field( plugin_basename( __FILE__ ), 'myplugin_noncename' );
+        ?>
+        <label id="<?php echo $this->plugin_name ?>">
+            Upload the concept source files as a zip file<br />
+            <input class="upload_value" id="<?php echo $this->plugin_name ?>-value" type="text" size="36" name="<?php echo $this->plugin_name ?>-value" value="" />
+            <input class="upload_file" id="<?php echo $this->plugin_name ?>-button" type="button" value="Browse" />
+        </label>
+        <?php
+    }
 
 }
 
